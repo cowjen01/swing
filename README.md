@@ -2,6 +2,13 @@
 
 Swing is an open-source client for creating compounded Docker Swarm deployments using already prepared services called Swing Charts. The charts can be installed from public repositories served by the Swing Server application.
 
+```
+[swing]
+server = http://localhost:5000
+email = user123@gmail.com
+password = pass123
+```
+
 ## Functional Requirements
 
 - Downloading charts from the repository.
