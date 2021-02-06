@@ -3,7 +3,7 @@ from base64 import b64encode
 
 from .errors import ApiHttpError
 from .chart import Chart, Release
-from .helpers import get_archive_filename
+from .chart import get_archive_filename
 
 
 def parse_error_response(response):
@@ -22,7 +22,7 @@ class ApiService:
         response = None
         try:
             response = self.session.request(method, f'{self.server_url}{path}', **kwargs)
-            response.raise_for_status()
+            response.raise_for_status()   
             return response
         except requests.ConnectionError:
             raise ApiHttpError('Repository server is not available')
@@ -51,20 +51,24 @@ class ApiService:
         }
         if version:
             params['version'] = version
-
+        
         response = self.request('/chart', params=params)
+        
         return [Release.from_dict(r) for r in response.json()]
 
     def download_release(self, chart_name, version):
         filename = get_archive_filename(chart_name, version)
-
         response = self.request(f'/release/{filename}')
-        # open(os.path.join(dst_path, filename), 'wb').write(response.content)
+        
         return response.content
 
-    def upload_release(self, file, chart_name, version):
+    def upload_release(self, archive_file, chart_name, version):        
+        self.login()
+        
         filename = get_archive_filename(chart_name, version)
         files = dict(
-            chart=(file, filename)
+            chart=(filename, archive_file)
         )
-        self.request('/release', method='POST', files=files)
+        
+        response = self.request('/release', method='POST', files=files)
+        return Release.from_dict(response.json())

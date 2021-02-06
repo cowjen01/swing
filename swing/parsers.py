@@ -2,7 +2,7 @@ import configparser
 import yaml
 
 from .helpers import *
-from .errors import InvalidConfigError, InvalidRequirementsError
+from .errors import InvalidConfigError, InvalidRequirementsError, InvalidChartDefinitionError
 
 
 class Config:
@@ -17,6 +17,12 @@ class Requirement:
         self.chart_name = chart_name
         self.version = version
         self.file = file
+        
+
+class ChartDefinition:
+    def __init__(self, name, version):
+        self.name = name
+        self.version = version
 
 
 def parse_config(path=None):
@@ -83,3 +89,24 @@ def parse_requirements(path=None):
         requirements.append(Requirement(d.get('name'), d.get('version'), d.get('file')))
                                    
     return requirements
+
+
+def parse_chart_definition(path):
+    definition_path = get_yaml_filename(path, 'chart')
+
+    if not definition_path:
+        raise InvalidChartDefinitionError('No definition file')
+
+    with open(definition_path, 'r') as f:
+        try:
+            definition_yaml = yaml.safe_load(f)
+        except yaml.YAMLError:
+            raise InvalidChartDefinitionError('Invalid definition file')
+
+    chart_name = definition_yaml.get('name')
+    version = definition_yaml.get('version')
+
+    if not chart_name or not version:
+        raise InvalidChartDefinitionError('Definition name or version empty')
+
+    return ChartDefinition(chart_name, version)
