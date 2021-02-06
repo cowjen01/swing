@@ -1,10 +1,12 @@
 import click
+from typing import List
 from tabulate import tabulate
 
 from .chart import Release, Chart
+from .helpers import format_date
 
 
-def print_charts(charts: [Chart], query=None):
+def print_charts(charts: List[Chart], query=None):
     if not len(charts):
         if not query:
             click.echo('No charts uploaded to the repository')
@@ -13,3 +15,11 @@ def print_charts(charts: [Chart], query=None):
     else:
         table = ([c.name, c.description] for c in charts)
         click.echo(tabulate(table, headers=['Name', 'Description']))
+
+
+def print_releases(releases: List[Release], chart_name):
+    if not len(releases):
+        click.echo(f'No releases found for chart "{chart_name}"')
+    else:
+        table = ([r.version, r.notes, format_date(r.release_date)] for r in releases)
+        click.echo(tabulate(table, headers=['Version', 'Release notes', 'Published date']))

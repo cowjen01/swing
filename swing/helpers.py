@@ -1,5 +1,6 @@
 import os
 import re
+from datetime import datetime
 
 url_regex = r'^http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*(),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+$'
 
@@ -35,3 +36,9 @@ def get_yaml_filename(directory, name):
         return yml_path
 
     return None
+
+
+def format_date(date_string):
+    fmt = '%a, %d %b %Y %H:%M:%S %Z'
+    date = datetime.strptime(date_string, fmt)
+    return date.strftime('%m/%d/%y')

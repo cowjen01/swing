@@ -52,7 +52,7 @@ class ApiService:
         if version:
             params['version'] = version
         
-        response = self.request('/chart', params=params)
+        response = self.request('/release', params=params)
         
         return [Release.from_dict(r) for r in response.json()]
 
@@ -62,13 +62,18 @@ class ApiService:
         
         return response.content
 
-    def upload_release(self, archive_file, chart_name, version):        
+    def upload_release(self, archive_file, chart_name, version, notes=None):        
         self.login()
-        
+
         filename = get_archive_filename(chart_name, version)
         files = dict(
-            chart=(filename, archive_file)
+            chart=(filename, archive_file),
+            notes=notes
         )
+
+        data = dict()
+        if notes:
+            data['notes'] = notes
         
-        response = self.request('/release', method='POST', files=files)
+        response = self.request('/release', method='POST', files=files, data=data)
         return Release.from_dict(response.json())

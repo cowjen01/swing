@@ -4,7 +4,7 @@ from typing import List
 from .api import ApiService
 from .parsers import *
 from .errors import *
-from .views import print_charts
+from .views import print_charts, print_releases
 from .chart import *
 from .helpers import *
 
@@ -28,10 +28,8 @@ def read_requirements(ctx, param, path):
 def read_chart_path(ctx, param, path):
     if not path:
         path = get_current_dir()
-    
     if not is_readable_dir(path):
         raise click.BadParameter('Invalid chart path')
-    
     return path
 
 
@@ -52,6 +50,18 @@ def search(ctx, query):
     try:
         charts = api.list_charts(query)
         print_charts(charts, query)
+    except ApiHttpError as e:
+        click.echo(e.message)
+        
+        
+@swing.command()
+@click.argument('chart_name', metavar='CHART', required=True)
+@click.pass_context
+def show(ctx, chart_name):
+    api: ApiService = ctx.obj['API_SERVICE']
+    try:
+        charts = api.list_releases(chart_name)
+        print_releases(charts, chart_name)
     except ApiHttpError as e:
         click.echo(e.message)
         
@@ -98,15 +108,16 @@ def install(ctx, requirements: List[Requirement]):
 
 @swing.command()
 @click.argument('path', metavar='PATH', required=False, callback=read_chart_path)
+@click.option('-n', '--notes', metavar='MESSAGE', help='Release notes.', required=False)
 @click.pass_context
-def publish(ctx, path):
+def publish(ctx, path, notes):
     api: ApiService = ctx.obj['API_SERVICE']
     
     try:
         definition = parse_chart_definition(path)
         archive = zip_chart_folder(path)
         
-        release = api.upload_release(archive.getbuffer(), definition.name, definition.version)
+        release = api.upload_release(archive.getbuffer(), definition.name, definition.version, notes)
         click.echo(f'Release published: {release.archive_url}')
     except ApiHttpError as e:
         click.echo(e.message)
