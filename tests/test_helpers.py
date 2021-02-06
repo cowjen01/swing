@@ -9,7 +9,7 @@ from helpers import get_fixtures_path
     (os.path.join(get_fixtures_path('configs'), 'valid.cfg'), True),
 ])
 def test_validate_path(path, expected):
-    assert is_valid_path(path) == expected
+    assert is_readable_file(path) == expected
 
 
 @pytest.mark.parametrize('url,expected', [

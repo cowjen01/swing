@@ -8,10 +8,10 @@ from .helpers import get_archive_filename
 
 def parse_error_response(response):
     error = response.json()
-    return error.get('message'), error.get('code')
+    return error.get('description'), error.get('code')
 
 
-class SwingApiService:
+class ApiService:
     def __init__(self, server_url, email, password, session=None):
         self.server_url = server_url
         self.email = email

@@ -2,13 +2,13 @@ import os
 import pytest
 from helpers import get_fixtures_path
 
-from swing.config import read_config
+from swing.parsers import parse_config
 from swing.errors import InvalidConfigError
 
 
 def test_read_config():
     path = os.path.join(get_fixtures_path('configs'), 'valid.cfg')
-    config = read_config(path)
+    config = parse_config(path)
 
     assert config.email == 'user123@gmail.com'
     assert config.password == 'pass123'
@@ -23,4 +23,4 @@ def test_invalid_config(filename):
     path = os.path.join(get_fixtures_path('configs'), filename)
 
     with pytest.raises(InvalidConfigError):
-        read_config(path)
+        parse_config(path)
