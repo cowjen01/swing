@@ -1,0 +1,10 @@
+redis:
+  usePassword: true
+  password: pass123
+
+redis-gui:
+  redis:
+    usePassword: true
+    password: pass123
+  service:
+    port: 3001

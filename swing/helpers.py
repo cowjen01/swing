@@ -10,3 +10,7 @@ def is_valid_url(url):
 
 def is_valid_path(path):
     return os.path.isfile(path) and os.access(path, os.R_OK)
+
+
+def get_archive_filename(chart_name, version):
+    return f'{chart_name}-{version}.zip'

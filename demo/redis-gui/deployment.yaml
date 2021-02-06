@@ -1,0 +1,16 @@
+{% set development = development|default(false) %}
+version: '3'
+
+services:
+  {{ serviceName }}:
+    image: rediscommander/redis-commander:{{ image.tag }}
+    restart: always
+    environment:
+      {% if redis.usePassword %}
+      - REDIS_HOSTS=main:{{ redis.host }}:{{ redis.port }}:{{ redis.db }}:{{ redis.password }}
+      {% else %}
+      - REDIS_HOSTS=main:{{ redis.host }}:{{ redis.port }}:{{ redis.db }}
+      {% endif %}
+
+    ports:
+      - {{ service.port }}:{{ service.targetPort }}
