@@ -1,5 +1,6 @@
 import os
 import re
+import zipfile
 
 url_regex = r'^http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*(),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+$'
 
@@ -39,3 +40,14 @@ def get_yaml_filename(directory, name):
         return yml_path
     
     return None
+
+
+def zip_folder(dir_path, dst_path):
+    zip_file = zipfile.ZipFile(dst_path, 'w')
+    
+    for dirname, subdirs, files in os.walk(dir_path):
+        zip_file.write(dirname)
+        for filename in files:
+            zip_file.write(os.path.join(dirname, filename))
+    
+    zip_file.close()

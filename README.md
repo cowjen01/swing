@@ -20,6 +20,9 @@ password = pass123
 - Before uploading the chart, secrets have to be set in the config file.
 - The client should support the help command.
 
+## Further plans
+- Client-side chart validation
+
 ## Documentation
 - https://pypi.org/project/tabulate/
 - https://click.palletsprojects.com/en/7.x/commands/
