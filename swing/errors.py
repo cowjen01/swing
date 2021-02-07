@@ -2,14 +2,14 @@ class InvalidConfigError(Exception):
     def __init__(self, message):
         self.message = f'Parsing of config failed: {message.lower()}'
         super().__init__(self.message)
-        
-        
+
+
 class InvalidRequirementsError(Exception):
     def __init__(self, message):
         self.message = f'Parsing of requirements failed: {message.lower()}'
         super().__init__(self.message)
-        
-        
+
+
 class InvalidChartDefinitionError(Exception):
     def __init__(self, message):
         self.message = f'Reading of chart definition failed: {message.lower()}'
@@ -21,4 +21,3 @@ class ApiHttpError(Exception):
         self.code = code
         self.message = f'Request to server failed: {message.lower()}'
         super().__init__(self.message)
-

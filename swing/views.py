@@ -1,5 +1,6 @@
-import click
 from typing import List
+
+import click
 from tabulate import tabulate
 
 from .chart import Release, Chart

@@ -1,7 +1,8 @@
-import zipfile
 import os
-import click
+import zipfile
 from io import BytesIO
+
+import click
 
 
 class Chart:
@@ -45,9 +46,9 @@ def zip_chart_folder(dir_path):
             for file in files:
                 filename = os.path.join(dirname, file)
                 arcname = os.path.join(os.path.relpath(dirname, relroot), file)
-                
+
                 click.echo(f'Packing file: {arcname}')
-                
+
                 zip_archive.write(filename, arcname=arcname)
 
     return archive

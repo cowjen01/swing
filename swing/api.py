@@ -1,9 +1,10 @@
-import requests
 from base64 import b64encode
 
-from .errors import ApiHttpError
+import requests
+
 from .chart import Chart, Release
 from .chart import get_archive_filename
+from .errors import ApiHttpError
 
 
 def parse_error_response(response):
@@ -22,7 +23,7 @@ class ApiService:
         response = None
         try:
             response = self.session.request(method, f'{self.server_url}{path}', **kwargs)
-            response.raise_for_status()   
+            response.raise_for_status()
             return response
         except requests.ConnectionError:
             raise ApiHttpError('Repository server is not available')
@@ -51,18 +52,18 @@ class ApiService:
         }
         if version:
             params['version'] = version
-        
+
         response = self.request('/release', params=params)
-        
+
         return [Release.from_dict(r) for r in response.json()]
 
     def download_release(self, chart_name, version):
         filename = get_archive_filename(chart_name, version)
         response = self.request(f'/release/{filename}')
-        
+
         return response.content
 
-    def upload_release(self, archive_file, chart_name, version, notes=None):        
+    def upload_release(self, archive_file, chart_name, version, notes=None):
         self.login()
 
         filename = get_archive_filename(chart_name, version)
@@ -74,15 +75,15 @@ class ApiService:
         data = dict()
         if notes:
             data['notes'] = notes
-        
+
         response = self.request('/release', method='POST', files=files, data=data)
         return Release.from_dict(response.json())
-    
+
     def delete_chart(self, chart_name, version=None):
         self.login()
-        
+
         params = dict()
         if version:
             params['version'] = version
-        
+
         self.request(f'/chart/{chart_name}', method='DELETE', params=params)
