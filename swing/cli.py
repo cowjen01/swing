@@ -1,12 +1,13 @@
 import click
+import os
 from typing import List
 
 from .api import ApiService
-from .parsers import *
-from .errors import *
+from .parsers import parse_config, parse_requirements, parse_chart_definition, Config, Requirement
+from .errors import InvalidChartDefinitionError, InvalidRequirementsError, InvalidConfigError, ApiHttpError
 from .views import print_charts, print_releases
-from .chart import *
-from .helpers import *
+from .chart import get_archive_filename, zip_chart_folder
+from .helpers import get_current_dir, create_directory
 
 
 def read_config(ctx, param, path):
@@ -38,6 +39,7 @@ def read_chart_path(ctx, param, path):
               required=False)
 @click.pass_context
 def swing(ctx, config: Config):
+    """Client for communicating with the remote respository."""
     ctx.ensure_object(dict)
     ctx.obj['API_SERVICE'] = ApiService(config.server_url, config.email, config.password)
 
@@ -46,6 +48,7 @@ def swing(ctx, config: Config):
 @click.argument('query', metavar='KEYWORD', required=False)
 @click.pass_context
 def search(ctx, query):
+    """Search for available charts."""
     api = ctx.obj['API_SERVICE']
     try:
         charts = api.list_charts(query)
@@ -58,6 +61,7 @@ def search(ctx, query):
 @click.argument('chart_name', metavar='CHART', required=True)
 @click.pass_context
 def show(ctx, chart_name):
+    """Show releases of specific chart."""
     api: ApiService = ctx.obj['API_SERVICE']
     try:
         charts = api.list_releases(chart_name)
@@ -71,6 +75,7 @@ def show(ctx, chart_name):
               required=False)
 @click.pass_context
 def install(ctx, requirements: List[Requirement]):
+    """Install requirements specified in the dependency file."""
     api: ApiService = ctx.obj['API_SERVICE']
     charts_dir = os.path.join(get_current_dir(), '.charts')
 
@@ -111,6 +116,7 @@ def install(ctx, requirements: List[Requirement]):
 @click.option('-n', '--notes', metavar='MESSAGE', help='Release notes.', required=False)
 @click.pass_context
 def publish(ctx, path, notes):
+    """Upload local chart to the remote respository."""
     api: ApiService = ctx.obj['API_SERVICE']
     
     try:
@@ -122,6 +128,24 @@ def publish(ctx, path, notes):
     except ApiHttpError as e:
         click.echo(e.message)
     except InvalidChartDefinitionError as e:
+        click.echo(e.message)
+
+
+@swing.command()
+@click.argument('chart_name', metavar='CHART', required=True)
+@click.option('-v', '--version', metavar='VERSION', help='Version of release to delete.', required=False)
+@click.pass_context
+def delete(ctx, chart_name, version):
+    """Delete chart or specific release from repository server."""
+    api: ApiService = ctx.obj['API_SERVICE']
+
+    try:
+        api.delete_chart(chart_name, version)
+        if version:
+            click.echo(f'Release with version {version} was deleted')
+        else:
+            click.echo(f'Chart {chart_name} was deleted')
+    except ApiHttpError as e:
         click.echo(e.message)
 
 

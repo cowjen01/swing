@@ -77,3 +77,12 @@ class ApiService:
         
         response = self.request('/release', method='POST', files=files, data=data)
         return Release.from_dict(response.json())
+    
+    def delete_chart(self, chart_name, version=None):
+        self.login()
+        
+        params = dict()
+        if version:
+            params['version'] = version
+        
+        self.request(f'/chart/{chart_name}', method='DELETE', params=params)
