@@ -2,15 +2,15 @@
 version: '3'
 
 services:
-  {{ serviceName }}:
-    image: rediscommander/redis-commander:{{ image.tag }}
+  {{ Values.serviceName }}:
+    image: rediscommander/redis-commander:{{ Values.image.tag }}
     restart: always
     environment:
-      {% if redis.usePassword %}
-      - REDIS_HOSTS=main:{{ redis.host }}:{{ redis.port }}:{{ redis.db }}:{{ redis.password }}
+      {% if Values.redis.usePassword %}
+      - REDIS_HOSTS=main:{{ Values.redis.host }}:{{ Values.redis.port }}:{{ Values.redis.db }}:{{ Values.redis.password }}
       {% else %}
-      - REDIS_HOSTS=main:{{ redis.host }}:{{ redis.port }}:{{ redis.db }}
+      - REDIS_HOSTS=main:{{ Values.redis.host }}:{{ Values.redis.port }}:{{ Values.redis.db }}
       {% endif %}
 
     ports:
-      - {{ service.port }}:{{ service.targetPort }}
+      - {{ Values.service.port }}:{{ Values.service.targetPort }}

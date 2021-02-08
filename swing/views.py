@@ -3,7 +3,7 @@ from typing import List
 import click
 from tabulate import tabulate
 
-from .chart import Release, Chart
+from .api import Release, Chart
 from .helpers import format_date
 
 
@@ -24,3 +24,12 @@ def print_releases(releases: List[Release], chart_name):
     else:
         table = ([r.version, r.notes, format_date(r.release_date)] for r in releases)
         click.echo(tabulate(table, headers=['Version', 'Release notes', 'Published date']))
+
+
+def print_error(message):
+    error_label = click.style('ERROR:', fg='red')
+    click.echo(f'{error_label} {message}')
+
+
+def print_info(message):
+    click.echo(message)

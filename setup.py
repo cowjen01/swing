@@ -20,7 +20,8 @@ setup(
         'pyyaml~=5.4.1',
         'click~=7.1.2',
         'requests~=2.25.1',
-        'tabulate~=0.8.7'
+        'tabulate~=0.8.7',
+        'jinja2~=2.11.3'
     ],
     entry_points={
         'console_scripts': [

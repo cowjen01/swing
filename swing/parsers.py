@@ -33,9 +33,6 @@ def parse_config(path=None):
     if not path:
         path = os.path.join(os.path.expanduser('~'), '.swing')
 
-    if not is_readable_file(path):
-        raise InvalidConfigError('Invalid config file path')
-
     with open(path, 'r') as f:
         config.read_file(f)
 
@@ -60,7 +57,8 @@ def parse_config(path=None):
 
 def parse_requirements(path=None):
     if not path:
-        path = get_yaml_filename(get_current_dir(), 'requirements')
+        filename = get_yaml_filename(get_current_dir(), 'requirements')
+        path = os.path.join(get_current_dir(), filename)
 
     if not is_readable_file(path):
         raise InvalidRequirementsError(f'Invalid requirements file path ({path})')
@@ -94,7 +92,8 @@ def parse_requirements(path=None):
 
 
 def parse_chart_definition(path):
-    definition_path = get_yaml_filename(path, 'chart')
+    filename = get_yaml_filename(path, 'chart')
+    definition_path = os.path.join(path, filename)
 
     if not definition_path:
         raise InvalidChartDefinitionError('No definition file')

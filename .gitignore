@@ -129,4 +129,5 @@ dmypy.json
 .pyre/
 
 .idea/
-demo/.charts/
+demo/charts/
+demo/docker-stack.yaml

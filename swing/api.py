@@ -2,14 +2,36 @@ from base64 import b64encode
 
 import requests
 
-from .chart import Chart, Release
-from .chart import get_archive_filename
 from .errors import ApiHttpError
+from .helpers import get_archive_filename
 
 
-def parse_error_response(response):
-    error = response.json()
-    return error.get('description'), error.get('code')
+class Chart:
+    def __init__(self, name, description):
+        self.name = name
+        self.description = description
+
+    @classmethod
+    def from_dict(cls, json):
+        name = json.get('name')
+        description = json.get('description')
+        return cls(name, description)
+
+
+class Release:
+    def __init__(self, version, release_date, archive_url, notes):
+        self.version = version
+        self.release_date = release_date
+        self.archive_url = archive_url
+        self.notes = notes
+
+    @classmethod
+    def from_dict(cls, json):
+        version = json.get('version')
+        release_date = json.get('releaseDate')
+        archive_url = json.get('archiveUrl')
+        notes = json.get('notes')
+        return cls(version, release_date, archive_url, notes)
 
 
 class ApiService:
@@ -18,6 +40,11 @@ class ApiService:
         self.email = email
         self.password = password
         self.session = session or requests.Session()
+
+    @staticmethod
+    def parse_error_response(response):
+        error = response.json()
+        return error.get('description'), error.get('code')
 
     def request(self, path, method='GET', **kwargs):
         response = None
@@ -28,7 +55,7 @@ class ApiService:
         except requests.ConnectionError:
             raise ApiHttpError('Repository server is not available')
         except requests.HTTPError:
-            message, code = parse_error_response(response)
+            message, code = self.parse_error_response(response)
             raise ApiHttpError(message, code)
 
     def login(self):
