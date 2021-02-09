@@ -1,0 +1,9 @@
+version: '3.8'
+
+services:
+  {{ Values.serviceName }}:
+    image: redis:{{ Values.image.tag }}
+    command: redis-server {% if Values.usePassword %}--requirepass {{ Values.password }}{% endif %}
+    deploy:
+      mode: replicated
+      replicas: 1

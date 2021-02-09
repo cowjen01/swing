@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  {{ Values.serviceName }}:
+    image: postgres:{{ Values.image.tag }}
+    environment:
+      POSTGRES_USER: {{ Values.username }}
+      POSTGRES_DB: {{ Values.database }}
+      POSTGRES_PASSWORD: {{ Values.password }}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    deploy:
+      mode: replicated
+      replicas: 1

@@ -1,0 +1,8 @@
+redis:
+  usePassword: true
+  password: password234
+  
+psql:
+  username: root
+  database: main
+  password: secret432

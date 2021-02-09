@@ -48,7 +48,7 @@ def test_invalid_requirement(filename):
 
 
 def test_parse_definition():
-    path = os.path.join(get_fixtures_path(), 'charts', 'valid', 'chart.yml')
+    path = os.path.join(get_fixtures_path(), 'definitions', 'valid.yaml')
     definition = parse_chart_definition(path)
     
     assert definition.name == 'psql'
@@ -56,7 +56,7 @@ def test_parse_definition():
 
 
 def test_invalid_definition():
-    path = os.path.join(get_fixtures_path(), 'charts', 'invalid', 'chart.yaml')
+    path = os.path.join(get_fixtures_path(), 'definitions', 'invalid.yaml')
 
     with pytest.raises(InvalidChartDefinitionError):
         parse_chart_definition(path)

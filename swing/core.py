@@ -5,7 +5,7 @@ from io import BytesIO
 from .builder import ChartBuilder
 from .helpers import get_current_dir, create_directory, get_archive_filename, is_tool, select_yaml
 from .parsers import parse_chart_definition
-from .views import print_charts, print_releases, print_ok, print_process
+from .views import print_charts, print_releases, print_ok, print_process, print_info
 from .errors import SwingCoreError
 
 
@@ -51,19 +51,20 @@ class SwingCore:
         definition = parse_chart_definition(definition_path)
         chart_path = os.path.join(install_dir, get_archive_filename(definition.name, definition.version))
 
-        print_process(f'Packing \'{definition.chart_name}-{definition.version}\' from \'{requirement.file}\'')
+        print_process(f'Packing \'{definition.name}-{definition.version}\' from \'{requirement.file}\'')
 
         archive = self.zip_folder(requirement.file)
         with open(chart_path, 'wb') as f:
             f.write(archive.getbuffer())
 
-    def install_requirements(self, requirements):
-        install_dir = os.path.join(get_current_dir(), 'charts')
+    def install_requirements(self, requirements, install_dir=None):
+        if not install_dir:
+            install_dir = os.path.join(get_current_dir(), 'charts')
 
         if len(requirements) == 0:
             raise SwingCoreError('No requirements to install.')
 
-        print_process(f'Installing {len(requirements)} requirements')
+        print_info(f'Installing {len(requirements)} requirements')
         create_directory(install_dir)
 
         for r in requirements:
@@ -102,6 +103,8 @@ class SwingCore:
 
         if not output_path:
             output_path = os.path.join(chart_dir, 'docker-stack.yaml')
+
+        print_info(f'Building from \'{chart_dir}\'')
 
         builder = ChartBuilder(chart_dir)
         builder.build_chart(output_path)

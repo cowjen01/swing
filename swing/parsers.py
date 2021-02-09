@@ -4,7 +4,7 @@ import os
 import yaml
 
 from .errors import InvalidConfigError, InvalidRequirementsError, InvalidChartDefinitionError
-from .helpers import select_yaml, get_current_dir, is_readable_dir, is_readable_file
+from .helpers import is_readable_dir, is_readable_file
 
 
 class Config:
@@ -74,13 +74,13 @@ def parse_requirements(requirements_path):
 
     for d in dependencies:
         if not d.get('name'):
-            raise InvalidRequirementsError('Chart\'s name has to be specified')
+            raise InvalidRequirementsError('Requirement\'s name has to be specified')
 
         if not d.get('file') and not d.get('version'):
-            raise InvalidRequirementsError('Release version has to be specified')
+            raise InvalidRequirementsError('Requirement\'s version has to be specified')
 
         if d.get('file') and not is_readable_dir(d.get('file')):
-            raise InvalidRequirementsError('Chart\'s directory is not valid')
+            raise InvalidRequirementsError('Requirement\'s directory is not valid')
 
         requirements.append(Requirement(d.get('name'), d.get('version'), d.get('file')))
 

@@ -39,5 +39,5 @@ def test_merge():
     ('values', 'values.yaml'),
 ])
 def test_yaml_filename_selector(filename, expected):
-    path = os.path.join(get_fixtures_path(), 'charts', 'valid')
+    path = os.path.join(get_fixtures_path(), 'demo', 'redis')
     assert select_yaml(path, filename) == expected

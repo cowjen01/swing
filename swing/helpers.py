@@ -27,6 +27,11 @@ def create_directory(path):
         os.makedirs(path)
 
 
+def remove_file(path):
+    if path and os.path.exists(path):
+        os.remove(path)
+
+
 def remove_directory(path):
     if path and os.path.exists(path):
         shutil.rmtree(path)

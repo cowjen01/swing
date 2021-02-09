@@ -1,0 +1,8 @@
+serviceName: postgres
+
+image:
+  tag: 12
+
+username: postgres
+database: postgres
+password: 12345

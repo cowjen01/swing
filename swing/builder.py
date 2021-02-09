@@ -4,11 +4,12 @@ import subprocess
 import zipfile
 
 import yaml
-from jinja2 import Environment, FileSystemLoader
+from jinja2 import Environment, FileSystemLoader, exceptions
 
-from .helpers import select_yaml, merge, create_directory, remove_directory
+from .helpers import select_yaml, merge, create_directory, remove_directory, is_readable_dir
 from .parsers import parse_chart_definition
-from .views import print_info, print_process
+from .views import print_process, print_info
+from .errors import SwingCoreError
 
 
 class ChartBuilder:
@@ -30,17 +31,16 @@ class ChartBuilder:
         
         requirement_values = self.read_values(requirement_dir)
         values = merge(requirement_values, custom_values)
-        
+
         file_loader = FileSystemLoader(requirement_dir)
         env = Environment(loader=file_loader)
         template = env.get_template(deployment_file)
 
         return template.render(Values=values)
 
-    @staticmethod
-    def list_requirement_archives(path):
+    def list_requirement_archives(self):
         files = []
-        for file in os.listdir(path):
+        for file in os.listdir(self.install_dir):
             if fnmatch.fnmatch(file, '*.zip'):
                 files.append(file)
         return files
@@ -56,40 +56,49 @@ class ChartBuilder:
         return result.stdout.decode('utf-8')
 
     def build_chart(self, output_path):
-        print_process(f'Building from \'{self.chart_dir}\'')
+        if not is_readable_dir(self.install_dir):
+            raise SwingCoreError('There are no installed requirements to build from.')
+        
         create_directory(self.build_dir)
         
-        files = self.list_requirement_archives(self.install_dir)
-        custom_values = self.read_values(self.chart_dir)
-
-        composes = []
-        for file in files:
-            requirement_name = '.'.join(file.split('.')[:-1])
-            requirement_dir = os.path.join(self.install_dir, requirement_name)
-
-            print_process(f'Building \'{requirement_name}\' requirement')
-
-            with zipfile.ZipFile(os.path.join(self.install_dir, file), 'r') as zip_archive:
-                zip_archive.extractall(requirement_dir)
-
-            filename = select_yaml(requirement_dir, 'chart')
-            definition_path = os.path.join(requirement_dir, filename)
-            definition = parse_chart_definition(definition_path)
-            compose = self.build_requirement(requirement_dir, custom_values)
-            compose_path = os.path.join(self.build_dir, f'{definition.name}-compose.yaml')
-
-            with open(compose_path, 'w') as f:
-                f.write(compose)
-
-            composes.append(compose_path)
-            remove_directory(requirement_dir)
-
-        print_process('Building final docker-compose file')
-        docker_compose = self.merge_composes(composes)
-        
-        with open(output_path, 'w') as file:
-            file.write(docker_compose)
-
-        print_process('Cleaning temporary files and directories')
-        remove_directory(self.build_dir)
+        try:
+            files = self.list_requirement_archives()
+            custom_values = self.read_values(self.chart_dir)
+    
+            composes = []
+            for file in files:
+                requirement_name = '.'.join(file.split('.')[:-1])
+                requirement_dir = os.path.join(self.install_dir, requirement_name)
+    
+                print_process(f'Building \'{requirement_name}\' requirement')
+    
+                with zipfile.ZipFile(os.path.join(self.install_dir, file), 'r') as zip_archive:
+                    zip_archive.extractall(requirement_dir)
+    
+                filename = select_yaml(requirement_dir, 'chart')
+                definition_path = os.path.join(requirement_dir, filename)
+                definition = parse_chart_definition(definition_path)
+                
+                try:
+                    compose = self.build_requirement(requirement_dir, custom_values[definition.name])
+                    compose_path = os.path.join(self.build_dir, f'{definition.name}-compose.yaml')
+    
+                    with open(compose_path, 'w') as f:
+                        f.write(compose)
+    
+                    composes.append(compose_path)
+                except exceptions.TemplateError as e:
+                    raise SwingCoreError(f'Building of requirement \'{requirement_name}\' failed: {e.message}.')
+                finally:
+                    remove_directory(requirement_dir)
+    
+            print_process('Building final docker-compose file')
+            docker_compose = self.merge_composes(composes)
+            
+            with open(output_path, 'w') as file:
+                file.write(docker_compose)
+            
+        finally:
+            print_process('Cleaning temporary files and directories')
+            remove_directory(self.build_dir)
 

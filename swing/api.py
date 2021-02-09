@@ -6,6 +6,16 @@ from .errors import ApiHttpError
 from .helpers import get_archive_filename
 
 
+class User:
+    def __init__(self, email):
+        self.email = email
+
+    @classmethod
+    def from_dict(cls, json):
+        email = json.get('email')
+        return cls(email)
+
+
 class Chart:
     def __init__(self, name, description):
         self.name = name
@@ -60,8 +70,9 @@ class ApiService:
 
     def login(self):
         credentials = b64encode(bytes(f'{self.email}:{self.password}', encoding='utf-8')).decode('utf-8')
-        self.request('/login', method='POST', headers={'Authorization': f'Basic {credentials}'})
-
+        response = self.request('/login', method='POST', headers={'Authorization': f'Basic {credentials}'})
+        return User.from_dict(response.json())
+        
     def logout(self):
         self.request('/logout', method='POST')
 

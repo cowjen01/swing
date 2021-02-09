@@ -1,0 +1,8 @@
+serviceName: redis
+
+image:
+  tag: 6
+
+usePassword: false
+password: null
+
