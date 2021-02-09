@@ -1,9 +1,7 @@
 import os
 import re
 import shutil
-import zipfile
 from datetime import datetime
-from io import BytesIO
 
 url_regex = r'^http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*(),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+$'
 
@@ -50,7 +48,7 @@ def merge(a, b, path=None):
     return a
 
 
-def get_yaml_filename(directory, name):
+def select_yaml(directory, name):
     yaml_path = os.path.join(directory, f'{name}.yaml')
     yml_path = os.path.join(directory, f'{name}.yml')
 
@@ -68,20 +66,10 @@ def format_date(date_string):
     return date.strftime('%m/%d/%y')
 
 
+def is_tool(name):
+    return shutil.which(name) is not None
+
+
 def get_archive_filename(chart_name, version):
     return f'{chart_name}-{version}.zip'
 
-
-def zip_chart_folder(dir_path):
-    archive = BytesIO()
-
-    with zipfile.ZipFile(archive, 'w') as zip_archive:
-        relroot = os.path.abspath(os.path.join(dir_path))
-        for dirname, subdirs, files in os.walk(dir_path):
-            for file in files:
-                filename = os.path.join(dirname, file)
-                arcname = os.path.join(os.path.relpath(dirname, relroot), file)
-
-                zip_archive.write(filename, arcname=arcname)
-
-    return archive

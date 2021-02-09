@@ -4,7 +4,7 @@ import os
 import yaml
 
 from .errors import InvalidConfigError, InvalidRequirementsError, InvalidChartDefinitionError
-from .helpers import get_yaml_filename, get_current_dir, is_readable_dir, is_readable_file
+from .helpers import select_yaml, get_current_dir, is_readable_dir, is_readable_file
 
 
 class Config:
@@ -57,7 +57,7 @@ def parse_config(path=None):
 
 def parse_requirements(path=None):
     if not path:
-        filename = get_yaml_filename(get_current_dir(), 'requirements')
+        filename = select_yaml(get_current_dir(), 'requirements')
         path = os.path.join(get_current_dir(), filename)
 
     if not is_readable_file(path):
@@ -92,7 +92,7 @@ def parse_requirements(path=None):
 
 
 def parse_chart_definition(path):
-    filename = get_yaml_filename(path, 'chart')
+    filename = select_yaml(path, 'chart')
     definition_path = os.path.join(path, filename)
 
     if not definition_path:

@@ -2,7 +2,7 @@ import click
 
 from .api import ApiService
 from .core import SwingCore
-from .errors import InvalidChartDefinitionError, InvalidRequirementsError, InvalidConfigError, ApiHttpError
+from .errors import InvalidChartDefinitionError, InvalidRequirementsError, InvalidConfigError, ApiHttpError, SwingCoreError
 from .parsers import parse_config, parse_requirements, Config
 from .views import print_error
 
@@ -31,6 +31,8 @@ class CatchAllExceptions(click.Group):
             print_error(e.message)
         except InvalidChartDefinitionError as e:
             print_error(e.message)
+        except SwingCoreError as e:
+            print_error(e.message)
 
 
 @click.group(cls=CatchAllExceptions)
@@ -38,7 +40,7 @@ class CatchAllExceptions(click.Group):
               required=False, type=click.Path(exists=True))
 @click.pass_context
 def swing(ctx, config: Config):
-    """Client for communicating with the remote respository."""
+    """Client for communication with the remote respository."""
     ctx.ensure_object(dict)
     api_service = ApiService(config.server_url, config.email, config.password)
     ctx.obj['SWING_CORE'] = SwingCore(api_service)
@@ -57,7 +59,7 @@ def search(ctx, query):
 @click.argument('chart_name', metavar='CHART', required=True)
 @click.pass_context
 def show(ctx, chart_name):
-    """Show releases of specific chart."""
+    """Show releases of the specific chart."""
     core: SwingCore = ctx.obj['SWING_CORE']
     core.list_releases(chart_name)
 
@@ -77,7 +79,7 @@ def install(ctx, requirements):
 @click.option('-n', '--notes', metavar='MESSAGE', help='Some release notes.', required=False)
 @click.pass_context
 def publish(ctx, chart_path, notes):
-    """Upload local chart to the remote respository."""
+    """Upload the local chart to the remote respository."""
     core: SwingCore = ctx.obj['SWING_CORE']
     core.publish_release(chart_path, notes)
 
@@ -87,7 +89,7 @@ def publish(ctx, chart_path, notes):
 @click.option('-v', '--version', metavar='VERSION', help='Version of the release to delete.', required=False)
 @click.pass_context
 def delete(ctx, chart_name, version):
-    """Delete chart or specific release from repository server."""
+    """Deletethe  chart or specific release from the repository server."""
     core: SwingCore = ctx.obj['SWING_CORE']
     core.delete_chart(chart_name, version)
 
@@ -97,7 +99,7 @@ def delete(ctx, chart_name, version):
 @click.option('-o', '--output', metavar='PATH', help='Docker compose output path.', required=False)
 @click.pass_context
 def build(ctx, chart_path, output):
-    """Build installed charts to the final docker compose file."""
+    """Build the installed charts to the final docker compose file."""
     core: SwingCore = ctx.obj['SWING_CORE']
     core.build_chart(chart_path, output)
 

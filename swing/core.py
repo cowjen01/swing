@@ -1,9 +1,12 @@
 import os
+import zipfile
+from io import BytesIO
 
 from .builder import ChartBuilder
-from .helpers import get_current_dir, create_directory, get_archive_filename, zip_chart_folder
+from .helpers import get_current_dir, create_directory, get_archive_filename, is_tool
 from .parsers import parse_chart_definition
-from .views import print_charts, print_releases, print_info
+from .views import print_charts, print_releases, print_info, print_ok, print_process
+from .errors import SwingCoreError
 
 
 class SwingCore:
@@ -17,12 +20,24 @@ class SwingCore:
     def list_releases(self, chart_name):
         charts = self.api.list_releases(chart_name)
         print_releases(charts, chart_name)
+    
+    @staticmethod
+    def zip_folder(dir_path):
+        archive = BytesIO()
+        with zipfile.ZipFile(archive, 'w') as zip_archive:
+            relroot = os.path.abspath(os.path.join(dir_path))
+            for dirname, subdirs, files in os.walk(dir_path):
+                for file in files:
+                    filename = os.path.join(dirname, file)
+                    arcname = os.path.join(os.path.relpath(dirname, relroot), file)
+                    zip_archive.write(filename, arcname=arcname)
+        return archive
 
     def download_requirement(self, requirement, install_dir):
         chart_name = requirement.chart_name
         version = requirement.version
 
-        print_info(f'-> Downloading "{chart_name}" chart (version {version})')
+        print_process(f'Downloading \'{chart_name}-{version}\'')
 
         chart_path = os.path.join(install_dir, get_archive_filename(chart_name, version))
         chart_archive = self.api.download_release(chart_name, version)
@@ -34,9 +49,9 @@ class SwingCore:
         definition = parse_chart_definition(requirement.file)
         chart_path = os.path.join(install_dir, get_archive_filename(definition.name, definition.version))
 
-        print_info(f'-> Zipping "{definition.name}" chart from "{requirement.file}" (version {definition.version})')
+        print_process(f'Packing \'{definition.chart_name}-{definition.version}\' from \'{requirement.file}\'')
 
-        archive = zip_chart_folder(requirement.file)
+        archive = self.zip_folder(requirement.file)
         with open(chart_path, 'wb') as f:
             f.write(archive.getbuffer())
 
@@ -44,9 +59,9 @@ class SwingCore:
         install_dir = os.path.join(get_current_dir(), 'charts')
 
         if len(requirements) == 0:
-            print_info('No requirements to install')
-            return
+            raise SwingCoreError('No requirements to install.')
 
+        print_process(f'Installing {len(requirements)} requirements')
         create_directory(install_dir)
 
         for r in requirements:
@@ -54,22 +69,27 @@ class SwingCore:
                 self.download_requirement(r, install_dir)
             else:
                 self.pack_requirement(r, install_dir)
+                
+        print_ok('All requirements are installed.')
 
     def publish_release(self, chart_dir, notes):
         definition = parse_chart_definition(chart_dir)
-        archive = zip_chart_folder(chart_dir)
+        archive = self.zip_folder(chart_dir)
 
         release = self.api.upload_release(archive.getbuffer(), definition.name, definition.version, notes)
-        print_info(f'Release published: {release.archive_url}')
+        print_ok(f'The release is published at {release.archive_url}.')
 
     def delete_chart(self, chart_name, version):
         self.api.delete_chart(chart_name, version)
         if version:
-            print_info(f'Release with version {version} was deleted')
+            print_ok(f'The release {version} of the \'{chart_name}\' chart is deleted.')
         else:
-            print_info(f'Chart {chart_name} was deleted')
+            print_ok(f'The \'{chart_name}\' chart is deleted.')
 
     def build_chart(self, chart_dir, output_path):
+        if not is_tool('docker-compose'):
+            raise SwingCoreError('To build the chart, the docker-compose command has to be installed.')
+
         if not chart_dir:
             chart_dir = get_current_dir()
 
@@ -78,3 +98,5 @@ class SwingCore:
 
         builder = ChartBuilder(chart_dir)
         builder.build_chart(output_path)
+        
+        print_ok(f'The chart is built at \'{output_path}\'.')
