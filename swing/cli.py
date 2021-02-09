@@ -1,10 +1,12 @@
 import click
+import os
 
 from .api import ApiService
 from .core import SwingCore
 from .errors import InvalidChartDefinitionError, InvalidRequirementsError, InvalidConfigError, ApiHttpError, SwingCoreError
 from .parsers import parse_config, parse_requirements, Config
 from .views import print_error
+from .helpers import select_yaml, get_current_dir
 
 
 def read_config(ctx, param, path):
@@ -17,6 +19,9 @@ def read_config(ctx, param, path):
 
 def read_requirements(ctx, param, path):
     try:
+        if not path:
+            filename = select_yaml(get_current_dir(), 'requirements')
+            path = os.path.join(get_current_dir(), filename)
         requirements = parse_requirements(path)
         return requirements
     except InvalidRequirementsError as e:

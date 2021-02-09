@@ -1,0 +1,5 @@
+dependencies:
+  - name: redis
+    version: 1.0.0
+  - name: psql
+    version: 3.0

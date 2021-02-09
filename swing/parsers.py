@@ -27,13 +27,13 @@ class ChartDefinition:
         self.version = version
 
 
-def parse_config(path=None):
+def parse_config(config_path=None):
     config = configparser.ConfigParser()
 
-    if not path:
-        path = os.path.join(os.path.expanduser('~'), '.swing')
+    if not config_path:
+        config_path = os.path.join(os.path.expanduser('~'), '.swing')
 
-    with open(path, 'r') as f:
+    with open(config_path, 'r') as f:
         config.read_file(f)
 
     if 'swing' not in config:
@@ -55,15 +55,11 @@ def parse_config(path=None):
     return Config(server_url, email, password)
 
 
-def parse_requirements(path=None):
-    if not path:
-        filename = select_yaml(get_current_dir(), 'requirements')
-        path = os.path.join(get_current_dir(), filename)
+def parse_requirements(requirements_path):
+    if not is_readable_file(requirements_path):
+        raise InvalidRequirementsError(f'Invalid requirements file path ({requirements_path})')
 
-    if not is_readable_file(path):
-        raise InvalidRequirementsError(f'Invalid requirements file path ({path})')
-
-    with open(path, 'r') as f:
+    with open(requirements_path, 'r') as f:
         try:
             yaml_file = yaml.safe_load(f)
         except yaml.YAMLError:
@@ -91,11 +87,8 @@ def parse_requirements(path=None):
     return requirements
 
 
-def parse_chart_definition(path):
-    filename = select_yaml(path, 'chart')
-    definition_path = os.path.join(path, filename)
-
-    if not definition_path:
+def parse_chart_definition(definition_path):
+    if not is_readable_file(definition_path):
         raise InvalidChartDefinitionError('No definition file')
 
     with open(definition_path, 'r') as f:

@@ -3,9 +3,9 @@ import zipfile
 from io import BytesIO
 
 from .builder import ChartBuilder
-from .helpers import get_current_dir, create_directory, get_archive_filename, is_tool
+from .helpers import get_current_dir, create_directory, get_archive_filename, is_tool, select_yaml
 from .parsers import parse_chart_definition
-from .views import print_charts, print_releases, print_info, print_ok, print_process
+from .views import print_charts, print_releases, print_ok, print_process
 from .errors import SwingCoreError
 
 
@@ -46,7 +46,9 @@ class SwingCore:
             f.write(chart_archive)
 
     def pack_requirement(self, requirement, install_dir):
-        definition = parse_chart_definition(requirement.file)
+        filename = select_yaml(requirement.file, 'chart')
+        definition_path = os.path.join(requirement.file, filename)
+        definition = parse_chart_definition(definition_path)
         chart_path = os.path.join(install_dir, get_archive_filename(definition.name, definition.version))
 
         print_process(f'Packing \'{definition.chart_name}-{definition.version}\' from \'{requirement.file}\'')
@@ -73,7 +75,12 @@ class SwingCore:
         print_ok('All requirements are installed.')
 
     def publish_release(self, chart_dir, notes):
-        definition = parse_chart_definition(chart_dir)
+        if not chart_dir:
+            chart_dir = get_current_dir()
+            
+        filename = select_yaml(chart_dir, 'chart')
+        definition_path = os.path.join(chart_dir, filename)
+        definition = parse_chart_definition(definition_path)
         archive = self.zip_folder(chart_dir)
 
         release = self.api.upload_release(archive.getbuffer(), definition.name, definition.version, notes)

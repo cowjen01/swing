@@ -6,3 +6,4 @@ jinja2~=2.11.3
 
 pytest~=6.2.2
 pep8~=1.7.1
+betamax~=0.8.1

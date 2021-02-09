@@ -72,7 +72,9 @@ class ChartBuilder:
             with zipfile.ZipFile(os.path.join(self.install_dir, file), 'r') as zip_archive:
                 zip_archive.extractall(requirement_dir)
 
-            definition = parse_chart_definition(requirement_dir)
+            filename = select_yaml(requirement_dir, 'chart')
+            definition_path = os.path.join(requirement_dir, filename)
+            definition = parse_chart_definition(definition_path)
             compose = self.build_requirement(requirement_dir, custom_values)
             compose_path = os.path.join(self.build_dir, f'{definition.name}-compose.yaml')
 

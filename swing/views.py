@@ -45,6 +45,6 @@ def print_releases(releases: List[Release], chart_name):
     if not len(releases):
         print_warning(f'No releases found for chart "{chart_name}"')
     else:
-        table = ([r.version, r.notes, format_date(r.release_date)] for r in releases)
-        print_info(tabulate(table, headers=['Version', 'Release notes', 'Published date']))
+        table = ([r.version, format_date(r.release_date), r.notes] for r in releases)
+        print_info(tabulate(table, headers=['Version', 'Published date', 'Release notes']))
 
