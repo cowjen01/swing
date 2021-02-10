@@ -6,10 +6,11 @@ with open('README.md') as f:
 
 
 setup(
-    name='swing',
+    name='swing_cli',
     version='0.1',
-    description='An open-source client for creating compounded Docker Swarm deployments',
+    description='Client tool for creating compounded Docker Swarm deployments',
     long_description=long_description,
+    long_description_content_type='text/markdown',
     author='Jan Šafařík',
     author_email='cowjen01@gmail.com',
     keywords='docker,swarm,repository',

@@ -45,7 +45,7 @@ class CatchAllExceptions(click.Group):
               required=False, type=click.Path(exists=True))
 @click.pass_context
 def swing(ctx, config: Config):
-    """Client for communication with the remote respository."""
+    """Client for communication with the Swing Server respository."""
     ctx.ensure_object(dict)
     api_service = ApiService(config.server_url, config.email, config.password)
     ctx.obj['SWING_CORE'] = SwingCore(api_service)
@@ -94,7 +94,7 @@ def publish(ctx, chart_path, notes):
 @click.option('-v', '--version', metavar='VERSION', help='Version of the release to delete.', required=False)
 @click.pass_context
 def delete(ctx, chart_name, version):
-    """Deletethe  chart or specific release from the repository server."""
+    """Delete the chart or specific release from the repository server."""
     core: SwingCore = ctx.obj['SWING_CORE']
     core.delete_chart(chart_name, version)
 

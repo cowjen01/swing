@@ -33,9 +33,9 @@ def print_process(message):
 def print_charts(charts: List[Chart], query=None):
     if not len(charts):
         if not query:
-            print_warning('No charts uploaded to the repository')
+            print_warning('No charts uploaded to the repository.')
         else:
-            print_warning(f'No charts found for query "{query}"')
+            print_warning(f'No charts found for query \'{query}\'')
     else:
         table = ([c.name, c.description] for c in charts)
         print_info(tabulate(table, headers=['Name', 'Description']))
@@ -43,7 +43,7 @@ def print_charts(charts: List[Chart], query=None):
 
 def print_releases(releases: List[Release], chart_name):
     if not len(releases):
-        print_warning(f'No releases found for chart "{chart_name}"')
+        print_warning(f'No releases found for chart \'{chart_name}\'')
     else:
         table = ([r.version, format_date(r.release_date), r.notes] for r in releases)
         print_info(tabulate(table, headers=['Version', 'Published date', 'Release notes']))
